@@ -1,7 +1,7 @@
-extends coursXX.pug
+extends _coursXX.pug
 
 append preamble
-  - date = "2024-10-21";
+  - date = "2025-11-10";
   - title = "Cours n°1 :<br>Représentations";
 
 append header
@@ -75,7 +75,7 @@ block document
       p La table a depuis été étendue de différentes manières pour ajouter des caractères supplémentaires
       br
       ul
-        li Ce sont les versions ISO 8859-1 (latin1) et ISO 8859-15 (latin9) qui correspondent le mieux au français
+        li Ce sont les versions <a href="https://fr.wikipedia.org/wiki/ISO/CEI_8859-1">ISO 8859-1</a> (latin1) et <a href="https://fr.wikipedia.org/wiki/ISO/CEI_8859-15">ISO 8859-15</a> (latin9) qui correspondent le mieux au français
 
   section
     h1 Octet
@@ -119,10 +119,10 @@ block document
       .only.center(data-step="+0" style={height: "40%"})
         img(src="cours01/hello.png" style={width: "80%"})
       .only(data-start="+1" style={height: "40%"})
-        p Si on veut utiliser un alphabet plus large, on peut utiliser l'<em>Unicode</em>
+        p Si on veut utiliser un alphabet plus large, on peut utiliser l'<a href="https://fr.wikipedia.org/wiki/Unicode">Unicode</a>
         ul
-          li 143859 caractères
-          li 154 systèmes d'écriture (modernes et historiques)
+          li 159 801 caractères (dernière mise à jour en sept. 2025)
+          li 163 systèmes d'écriture (modernes et historiques)
           li symboles divers (emoji, musique, etc.)
     .side
       .uncover

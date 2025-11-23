@@ -19,7 +19,7 @@
       <h1>Cours n°3 :<br>Nombres négatifs</h1>
       <div class="context">R1.03 - Intro. Archi</div>
       <div class="author">Victor Poupet</div>
-      <time>2024-11-18</time>
+      <time>2025-11-24</time>
     </section>
     <section>
       <h1>Problématique</h1>
@@ -304,12 +304,14 @@
         <li class="uncover">On décale l'intervalle \(\llbracket 0, 2^n-1\rrbracket\) sur \(\llbracket -2^{n-1} - 1, 2^{n-1}\rrbracket\)</li>
         <li class="uncover">On utilise un <em>biais</em> qu'on ajoute à chaque valeur à représenter (<em>biais</em> = \(2^{n-1} - 1\))</li>
       </ul><br>
-      <p>Sur 8 bits :</p>
-      <ul>
-        <li>0 &rarr; 126 : valeurs négatives</li>
-        <li>127 : zéro</li>
-        <li>128 &rarr; 255 : valeurs positives</li>
-      </ul>
+      <div class="uncover">
+        <p>Sur 8 bits :</p>
+        <ul>
+          <li>0 &rarr; 126 : valeurs négatives</li>
+          <li>127 : zéro</li>
+          <li>128 &rarr; 255 : valeurs positives</li>
+        </ul>
+      </div>
     </section>
     <section>
       <h1>Bilan</h1>
@@ -321,6 +323,7 @@
       <ul>
         <li>Moins naturel à interpréter</li>
         <li>Opérations plus compliquées (il faut soustraire ou ajouter le biais à chaque fois)</li>
+        <li>Ne correspond pas du tout à la représentation non-sigée</li>
       </ul>
     </section>
     <script src="https://vpoupet.github.io/myriad/slides/slides.js"></script>

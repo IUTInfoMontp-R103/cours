@@ -1,7 +1,7 @@
 extends _coursXX.pug
 
 append preamble
-    - date = "2024-11-18";
+    - date = "2025-11-24";
     - title = "Cours n°3 :<br>Nombres négatifs";
 
 append header
@@ -282,11 +282,12 @@ block document
       li.uncover On utilise un <em>biais</em> qu'on ajoute à chaque valeur à représenter (<em>biais</em> = \(2^{n-1} - 1\))
 
     br
-    p Sur 8 bits :
-    ul
-      li 0 &rarr; 126 : valeurs négatives
-      li 127 : zéro
-      li 128 &rarr; 255 : valeurs positives
+    .uncover
+      p Sur 8 bits :
+      ul
+        li 0 &rarr; 126 : valeurs négatives
+        li 127 : zéro
+        li 128 &rarr; 255 : valeurs positives
 
   section
     h1 Bilan
@@ -298,3 +299,4 @@ block document
     ul
       li Moins naturel à interpréter
       li Opérations plus compliquées (il faut soustraire ou ajouter le biais à chaque fois)
+      li Ne correspond pas du tout à la représentation non-sigée

@@ -14,7 +14,7 @@
       <h1>Cours n°7 :<br>Assembleur</h1>
       <div class="context">R1.03 - Intro. Archi</div>
       <div class="author">Victor Poupet</div>
-      <time>2024-12-16</time>
+      <time>2026-01-05</time>
     </section>
     <section>
       <h1>Compilation</h1>
@@ -41,7 +41,7 @@
         <p>Quelques registres courants (32 bits) :</p>
         <ul>
           <li><code>eip</code> : adresse de la prochaine instruction</li>
-          <li><code>esp</code>, <code>ebp</code></li>
+          <li><code>esp</code>, <code>ebp</code> : pointeurs de pile</li>
           <li><code>eax</code>, <code>ebx</code>, <code>ecx</code>, <code>edx</code>, <code>esi</code>, <code>edi</code> : registres généraux</li>
           <li><code>eflags</code> : bits d'informations sur la dernière opération effectuée</li>
         </ul>
@@ -53,6 +53,7 @@
           <li><code>rsp</code>, <code>rbp</code> : pointeurs de pile</li>
           <li><code>rax</code>, <code>rbx</code>, <code>rcx</code>, <code>rdx</code>, <code>rsi</code>, <code>rdi</code> : registres généraux</li>
           <li><code>r8</code>, <code>r9</code>, ..., <code>r15</code> : registres généraux supplémentaires</li>
+          <li><code>rflags</code> : version 64 bits de <code>eflags</code> (32 bits de poids fort inutilisés)</li>
         </ul>
       </div>
     </section>
@@ -62,8 +63,8 @@
       <ul>
         <li>Leur nature et leur nombre dépendent du CPU :
           <ul>
-            <li>plusieurs centaines sur les CPU Intel x86 (CISC)</li>
-            <li>quelques dizaines sur les CPU ARM (RISC)</li>
+            <li>de 50 à 200 sur les CPU RISC (<em>Reduced Instruction Set Computer</em>) comme ARM, MIPS, RISC-V</li>
+            <li>plus de 1000 sur les CPU CISC (<em>Complex Instruction Set Computer</em>) comme les Intel x86</li>
           </ul>
         </li>
         <li>Plus grand nombre d'instructions &rarr; programmes plus petits, circuits plus complexes</li>
@@ -122,12 +123,6 @@ mov   %rsp, %rbp</code></pre>
         </div>
       </div>
     </section>
-    <div class="side">
-      <ul>
-        <li><code>ebp</code> (<em>base pointer</em>) : début du <em>stack frame</em> courant</li>
-        <li><code>esp</code> (<em>stack pointer</em>) : haut de la pile</li>
-      </ul>
-    </div>
     <section>
       <h1>Premier exemple</h1>
       <div class="side">
@@ -139,6 +134,11 @@ mov   %rsp, %rbp</code></pre>
 </code></pre>
         <hr>
         <pre><code class="sh"> $ gcc -S -o prog.s prog.c</code></pre>
+        <div class="skip"></div>
+        <ul>
+          <li><a href="./cours07/examples/ex1-x86.s">Version x86</a></li>
+          <li><a href="./cours07/examples/ex1-AArch64.s">Version AArch64</a></li>
+        </ul>
       </div>
       <div class="side">
         <pre><code class="x86asm">.globl  _main  ; visible pour linker
@@ -183,6 +183,42 @@ LBB0_2:
   mov   $0, -4(%rbp)  ; val de retour
 LBB0_3:
   mov   -4(%rbp), %eax
+  pop   %rbp
+  ret
+</code></pre>
+      </div>
+    </section>
+    <section>
+      <h1>Boucle</h1>
+      <div class="side">
+        <pre><code class="c">int main() {
+  int t = 0;
+  for (int i = 0; i < 10; i++) {
+    t += i;
+  }
+  return t;
+}</code></pre>
+      </div>
+      <div class="side">
+        <pre><code class="x86asm">.globl _main
+_main:
+  push  %rbp
+  mov   %rsp, %rbp
+  mov   $0, -4(%rbp)
+  mov   $0, -8(%rbp)  ; t
+  mov   $0, -12(%rbp) ; i
+LBB0_1:
+  cmp   $10, -12(%rbp)  ; test
+  jge   LBB0_4  ; saut si i >= 10
+  mov   -12(%rbp), %eax ; addition
+  add   -8(%rbp), %eax  ;  "
+  mov   %eax, -8(%rbp)  ; -> t
+  mov   -12(%rbp), %eax ; incrémentation
+  add   $1, %eax        ;  "
+  mov   %eax, -12(%rbp) ; -> i
+  jmp   LBB0_1
+LBB0_4:
+  mov   -8(%rbp), %eax  ; val retour
   pop   %rbp
   ret
 </code></pre>
@@ -238,40 +274,14 @@ _main:
 </code></pre>
       </div>
     </section>
-    <section>
-      <h1>Boucle</h1>
-      <div class="side">
-        <pre><code class="c">int main() {
-  int t = 0;
-  for (int i = 0; i < 10; i++) {
-    t += i;
-  }
-  return t;
-}</code></pre>
-      </div>
-      <div class="side">
-        <pre><code class="x86asm">.globl _main
-_main:
-  push  %rbp
-  mov   %rsp, %rbp
-  mov   $0, -4(%rbp)
-  mov   $0, -8(%rbp)  ; t
-  mov   $0, -12(%rbp) ; i
-LBB0_1:
-  cmp   $10, -12(%rbp)  ; test
-  jge   LBB0_4  ; saut si i >= 10
-  mov   -12(%rbp), %eax ; addition
-  add   -8(%rbp), %eax  ;  "
-  mov   %eax, -8(%rbp)  ; -> t
-  mov   -12(%rbp), %eax ; incrémentation
-  add   $1, %eax        ;  "
-  mov   %eax, -12(%rbp) ; -> i
-  jmp   LBB0_1
-LBB0_4:
-  mov   -8(%rbp), %eax  ; val retour
-  pop   %rbp
-  ret</code></pre>
-      </div>
+    <section> 
+      <h1>Jeux</h1>
+      <p>Pour s'amuser avec l'assembleur :</p>
+      <ul>
+        <li><a href="https://www.zachtronics.com/shenzhen-io/">Shenzhen I/O</a>, <a href="https://www.zachtronics.com/tis-100/">TIS-100</a> (et à peu près tous les jeux de Zachtronics)</li>
+        <li><a href="https://tomorrowcorporation.com/humanresourcemachine">Human Resource Machine</a> (et éventuellement la suite <a href="https://tomorrowcorporation.com/7billionhumans">7 Billion Humans</a>)</li>
+        <li><a href="https://turingcomplete.game/">Turing Complete</a> (toute l'architecture d'un ordinateur)</li>
+      </ul>
     </section>
     <script src="highlight.min.js"></script>
     <script type="text/javascript">hljs.highlightAll();</script>

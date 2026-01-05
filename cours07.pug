@@ -1,7 +1,7 @@
 extends _coursXX.pug
 
 append preamble
-  - date = "2024-12-16";
+  - date = "2026-01-05";
   - title = "Cours n°7 :<br>Assembleur";
 
 append header
@@ -29,6 +29,7 @@ block document
         ul
           li lisible (texte)
           li correspond aux instructions élémentaires du CPU
+
   section
     h1 Registres
     p Les registres sont des emplacements mémoire sur le CPU pouvant contenir une valeur numérique (en général 32 bits ou 64 bits)
@@ -38,7 +39,7 @@ block document
       p Quelques registres courants (32 bits) :
       ul
         li <code>eip</code> : adresse de la prochaine instruction
-        li <code>esp</code>, <code>ebp</code>
+        li <code>esp</code>, <code>ebp</code> : pointeurs de pile
         li <code>eax</code>, <code>ebx</code>, <code>ecx</code>, <code>edx</code>, <code>esi</code>, <code>edi</code> : registres généraux
         li <code>eflags</code> : bits d'informations sur la dernière opération effectuée
     .only
@@ -48,6 +49,7 @@ block document
         li <code>rsp</code>, <code>rbp</code> : pointeurs de pile
         li <code>rax</code>, <code>rbx</code>, <code>rcx</code>, <code>rdx</code>, <code>rsi</code>, <code>rdi</code> : registres généraux
         li <code>r8</code>, <code>r9</code>, ..., <code>r15</code> : registres généraux supplémentaires
+        li <code>rflags</code> : version 64 bits de <code>eflags</code> (32 bits de poids fort inutilisés)
 
   section
     h1 Instructions
@@ -55,8 +57,8 @@ block document
     ul
       li Leur nature et leur nombre dépendent du CPU :
         ul
-          li plusieurs centaines sur les CPU Intel x86 (CISC)
-          li quelques dizaines sur les CPU ARM (RISC)
+          li de 50 à 200 sur les CPU RISC (<em>Reduced Instruction Set Computer</em>) comme ARM, MIPS, RISC-V
+          li plus de 1000 sur les CPU CISC (<em>Complex Instruction Set Computer</em>) comme les Intel x86
       li Plus grand nombre d'instructions &rarr; programmes plus petits, circuits plus complexes
 
   section
@@ -116,10 +118,6 @@ block document
         pre.uncover
           code.x86asm.
             pop   %rbp
-  .side
-      ul
-        li <code>ebp</code> (<em>base pointer</em>) : début du <em>stack frame</em> courant
-        li <code>esp</code> (<em>stack pointer</em>) : haut de la pile
   section
     h1 Premier exemple
     .side
@@ -135,6 +133,12 @@ block document
       pre
         code.sh 
           | $ gcc -S -o prog.s prog.c
+
+      .skip
+      ul
+        li <a href="./cours07/examples/ex1-x86.s">Version x86</a>
+        li <a href="./cours07/examples/ex1-AArch64.s">Version AArch64</a>
+
 
     .side
       pre
@@ -182,6 +186,43 @@ block document
             mov   $0, -4(%rbp)  ; val de retour
           LBB0_3:
             mov   -4(%rbp), %eax
+            pop   %rbp
+            ret
+
+  section
+    h1 Boucle
+    .side
+      pre
+        code.c.
+          int main() {
+            int t = 0;
+            for (int i = 0; i < 10; i++) {
+              t += i;
+            }
+            return t;
+          }
+    .side
+      pre
+        code.x86asm.
+          .globl _main
+          _main:
+            push  %rbp
+            mov   %rsp, %rbp
+            mov   $0, -4(%rbp)
+            mov   $0, -8(%rbp)  ; t
+            mov   $0, -12(%rbp) ; i
+          LBB0_1:
+            cmp   $10, -12(%rbp)  ; test
+            jge   LBB0_4  ; saut si i >= 10
+            mov   -12(%rbp), %eax ; addition
+            add   -8(%rbp), %eax  ;  "
+            mov   %eax, -8(%rbp)  ; -> t
+            mov   -12(%rbp), %eax ; incrémentation
+            add   $1, %eax        ;  "
+            mov   %eax, -12(%rbp) ; -> i
+            jmp   LBB0_1
+          LBB0_4:
+            mov   -8(%rbp), %eax  ; val retour
             pop   %rbp
             ret
 
@@ -240,39 +281,10 @@ block document
             pop   %rbp
             ret
 
-  section
-    h1 Boucle
-    .side
-      pre
-        code.c.
-          int main() {
-            int t = 0;
-            for (int i = 0; i < 10; i++) {
-              t += i;
-            }
-            return t;
-          }
-    .side
-      pre
-        code.x86asm.
-          .globl _main
-          _main:
-            push  %rbp
-            mov   %rsp, %rbp
-            mov   $0, -4(%rbp)
-            mov   $0, -8(%rbp)  ; t
-            mov   $0, -12(%rbp) ; i
-          LBB0_1:
-            cmp   $10, -12(%rbp)  ; test
-            jge   LBB0_4  ; saut si i >= 10
-            mov   -12(%rbp), %eax ; addition
-            add   -8(%rbp), %eax  ;  "
-            mov   %eax, -8(%rbp)  ; -> t
-            mov   -12(%rbp), %eax ; incrémentation
-            add   $1, %eax        ;  "
-            mov   %eax, -12(%rbp) ; -> i
-            jmp   LBB0_1
-          LBB0_4:
-            mov   -8(%rbp), %eax  ; val retour
-            pop   %rbp
-            ret
+  section 
+    h1 Jeux
+    p Pour s'amuser avec l'assembleur :
+    ul
+      li <a href="https://www.zachtronics.com/shenzhen-io/">Shenzhen I/O</a>, <a href="https://www.zachtronics.com/tis-100/">TIS-100</a> (et à peu près tous les jeux de Zachtronics)
+      li <a href="https://tomorrowcorporation.com/humanresourcemachine">Human Resource Machine</a> (et éventuellement la suite <a href="https://tomorrowcorporation.com/7billionhumans">7 Billion Humans</a>)
+      li <a href="https://turingcomplete.game/">Turing Complete</a> (toute l'architecture d'un ordinateur)
